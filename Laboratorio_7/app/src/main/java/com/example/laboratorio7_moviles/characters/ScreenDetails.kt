@@ -1,4 +1,4 @@
-package com.example.laboratorio7_moviles
+package com.example.laboratorio7_moviles.characters
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
@@ -9,6 +9,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
+import com.example.laboratorio7_moviles.CharacterDb
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

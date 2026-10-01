@@ -1,4 +1,4 @@
-package com.example.laboratorio7_moviles
+package com.example.laboratorio7_moviles.login
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
@@ -8,6 +8,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import com.example.laboratorio7_moviles.R
 
 @Composable
 fun LoginScreen(onNavigateToCharacters: () -> Unit) {
