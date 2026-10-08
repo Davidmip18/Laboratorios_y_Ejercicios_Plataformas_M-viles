@@ -11,7 +11,6 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavController
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.compose.*
-import androidx.navigation.toRoute
 import com.example.laboratorio7_moviles.characters.CharacterDetailScreen
 import com.example.laboratorio7_moviles.characters.CharactersScreen
 import com.example.laboratorio7_moviles.locations.LocationDetailsScreen
@@ -21,7 +20,7 @@ import com.example.laboratorio7_moviles.profile.ProfileScreen
 @Composable
 fun MainScreen(rootNavController: NavController) {
     val bottomNavController = rememberNavController()
-    val locationDb = remember { LocationDb() }
+    // Eliminamos la instanciación manual de locationDb, el ViewModel lo hará ahora
 
     Scaffold(
         bottomBar = {
@@ -82,10 +81,9 @@ fun MainScreen(rootNavController: NavController) {
                         }
                     )
                 }
-                composable<CharacterDetailsDestination> { backStackEntry ->
-                    val character = backStackEntry.toRoute<CharacterDetailsDestination>()
+                composable<CharacterDetailsDestination> {
+                    // Ya no extraemos el ID manualmente, el ViewModel lo lee
                     CharacterDetailScreen(
-                        characterId = character.characterId,
                         onBackClick = { bottomNavController.navigateUp() }
                     )
                 }
@@ -95,19 +93,14 @@ fun MainScreen(rootNavController: NavController) {
             navigation<LocationsGraph>(startDestination = LocationsListDestination) {
                 composable<LocationsListDestination> {
                     LocationsScreen(
-                        locationDb = locationDb,
                         onLocationClick = { id ->
-                            bottomNavController.navigate(
-                                LocationDetailsDestination(id)
-                            )
+                            bottomNavController.navigate(LocationDetailsDestination(id))
                         }
                     )
                 }
-                composable<LocationDetailsDestination> { backStackEntry ->
-                    val locationArgs = backStackEntry.toRoute<LocationDetailsDestination>()
+                composable<LocationDetailsDestination> {
+                    // Ya no extraemos el ID ni pasamos db, el ViewModel lo lee
                     LocationDetailsScreen(
-                        locationId = locationArgs.locationId,
-                        locationDb = locationDb,
                         onNavigateBack = { bottomNavController.navigateUp() }
                     )
                 }
@@ -116,11 +109,8 @@ fun MainScreen(rootNavController: NavController) {
             // PANTALLA DE PERFIL
             composable<ProfileDestination> {
                 ProfileScreen(onLogout = {
-                    // Al cerrar sesión, navegar al Login y limpiar todo el backstack
                     rootNavController.navigate(LoginDestination) {
-                        popUpTo(0) {
-                            inclusive = true
-                        } // Esto limpia absolutamente todo el backstack
+                        popUpTo(0) { inclusive = true }
                     }
                 })
             }
