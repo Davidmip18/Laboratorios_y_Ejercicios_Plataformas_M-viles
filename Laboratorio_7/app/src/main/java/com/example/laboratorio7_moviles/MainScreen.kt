@@ -20,7 +20,6 @@ import com.example.laboratorio7_moviles.profile.ProfileScreen
 @Composable
 fun MainScreen(rootNavController: NavController) {
     val bottomNavController = rememberNavController()
-    // Eliminamos la instanciación manual de locationDb, el ViewModel lo hará ahora
 
     Scaffold(
         bottomBar = {
@@ -82,7 +81,6 @@ fun MainScreen(rootNavController: NavController) {
                     )
                 }
                 composable<CharacterDetailsDestination> {
-                    // Ya no extraemos el ID manualmente, el ViewModel lo lee
                     CharacterDetailScreen(
                         onBackClick = { bottomNavController.navigateUp() }
                     )
@@ -99,7 +97,6 @@ fun MainScreen(rootNavController: NavController) {
                     )
                 }
                 composable<LocationDetailsDestination> {
-                    // Ya no extraemos el ID ni pasamos db, el ViewModel lo lee
                     LocationDetailsScreen(
                         onNavigateBack = { bottomNavController.navigateUp() }
                     )
@@ -110,6 +107,7 @@ fun MainScreen(rootNavController: NavController) {
             composable<ProfileDestination> {
                 ProfileScreen(onLogout = {
                     rootNavController.navigate(LoginDestination) {
+                        // popUpTo(0) borra toda la pila y te devuelve limpio al Login
                         popUpTo(0) { inclusive = true }
                     }
                 })

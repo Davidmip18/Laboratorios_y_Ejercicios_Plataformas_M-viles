@@ -3,41 +3,68 @@ package com.example.laboratorio7_moviles.login
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.example.laboratorio7_moviles.R
+import com.example.laboratorio7_moviles.UserStore
+import kotlinx.coroutines.launch
 
 @Composable
-fun LoginScreen(onNavigateToCharacters: () -> Unit) {
+fun ScreenLogin(onLoginSuccess: () -> Unit) {
+    val context = LocalContext.current
+    val userStore = remember { UserStore(context) }
+
+    val savedName by userStore.getName.collectAsState(initial = null)
+
+    var nameInput by remember { mutableStateOf("") }
+    val scope = rememberCoroutineScope()
+
+    LaunchedEffect(savedName) {
+        if (!savedName.isNullOrBlank()) {
+            onLoginSuccess()
+        }
+    }
+
     Column(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Spacer(modifier = Modifier.weight(1f))
-
-        // Logo de la app
+        // Imagen del logo de Rick and Morty
         Image(
             painter = painterResource(id = R.drawable.rick_and_morty_logo),
-            contentDescription = "Rick and Morty Logo",
-            modifier = Modifier.padding(32.dp)
+            contentDescription = "Logo Rick and Morty",
+            modifier = Modifier
+                .fillMaxWidth(0.8f)
+                .padding(bottom = 32.dp)
         )
+
+        TextField(
+            value = nameInput,
+            onValueChange = { nameInput = it },
+            label = { Text("Nombre") },
+            modifier = Modifier.fillMaxWidth(0.8f)
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
 
         Button(
-            onClick = onNavigateToCharacters,
-            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+            onClick = {
+                if (nameInput.isNotBlank()) {
+                    scope.launch {
+                        userStore.saveName(nameInput)
+                    }
+                }
+            },
+            modifier = Modifier.fillMaxWidth(0.8f)
         ) {
-            Text("Entrar")
+            Text("Iniciar sesión")
         }
-
-        Spacer(modifier = Modifier.weight(1f))
-
-        Text(
-            text = "David Ibaté - 251732",
-            style = MaterialTheme.typography.bodyMedium,
-            modifier = Modifier.padding(bottom = 32.dp)
-        )
     }
 }

@@ -7,7 +7,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.laboratorio7_moviles.login.LoginScreen
+import com.example.laboratorio7_moviles.login.ScreenLogin
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -22,10 +22,10 @@ class MainActivity : ComponentActivity() {
                 ) {
 
                     composable<LoginDestination> {
-                        // <-- Llamada corregida a LoginScreen
-                        LoginScreen(
-                            onNavigateToCharacters = {
+                        ScreenLogin(
+                            onLoginSuccess = {
                                 rootNavController.navigate(MainGraph) {
+                                    // Limpiamos la pila para que la app se cierre al dar Back
                                     popUpTo(LoginDestination) { inclusive = true }
                                 }
                             }
