@@ -4,10 +4,11 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -24,6 +25,7 @@ fun CharactersScreen(
     viewModel: CharactersViewModel = viewModel()
 ) {
     val state by viewModel.state.collectAsState()
+    var showOnlyFavorites by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
@@ -38,34 +40,53 @@ fun CharactersScreen(
     ) { paddingValues ->
         Box(modifier = Modifier.padding(paddingValues).fillMaxSize()) {
             when {
-                state.isLoading -> {
-                    LoadingLayout(onErrorClick = { viewModel.forceError() })
-                }
-                state.hasError -> {
-                    ErrorLayout(onRetry = { viewModel.loadData() })
-                }
+                state.isLoading -> LoadingLayout(onErrorClick = { viewModel.forceError() })
+                state.hasError -> ErrorLayout(onRetry = { viewModel.loadData() })
                 state.data != null -> {
-                    LazyColumn(modifier = Modifier.fillMaxSize()) {
-                        items(state.data!!) { character ->
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clickable { onCharacterClick(character.id) }
-                                    .padding(16.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                AsyncImage(
-                                    model = character.image,
-                                    contentDescription = character.name,
-                                    modifier = Modifier.size(64.dp)
-                                )
-                                Spacer(modifier = Modifier.width(16.dp))
-                                Column {
-                                    Text(text = character.name, style = MaterialTheme.typography.titleMedium)
-                                    Text(
-                                        text = "${character.species} - ${character.status}",
-                                        style = MaterialTheme.typography.bodyMedium
-                                    )
+                    val chars = state.data!!
+                    val filteredChars = if (showOnlyFavorites) chars.filter { it.isFavorite } else chars
+
+                    Column {
+                        Row(
+                            modifier = Modifier.fillMaxWidth().padding(16.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text("Mostrar solo favoritos", style = MaterialTheme.typography.titleMedium)
+                            Switch(checked = showOnlyFavorites, onCheckedChange = { showOnlyFavorites = it })
+                        }
+
+                        if (filteredChars.isEmpty()) {
+                            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                                Text("No hay elementos a mostrar")
+                            }
+                        } else {
+                            LazyColumn(modifier = Modifier.fillMaxSize()) {
+                                items(filteredChars) { character ->
+                                    Row(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .clickable { onCharacterClick(character.id) }
+                                            .padding(16.dp),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        AsyncImage(
+                                            model = character.image,
+                                            contentDescription = character.name,
+                                            modifier = Modifier.size(64.dp)
+                                        )
+                                        Spacer(modifier = Modifier.width(16.dp))
+                                        Column(modifier = Modifier.weight(1f)) {
+                                            Text(text = character.name, style = MaterialTheme.typography.titleMedium)
+                                            Text(text = "${character.species} - ${character.status}", style = MaterialTheme.typography.bodyMedium)
+                                        }
+                                        IconButton(onClick = { viewModel.toggleFavorite(character.id, !character.isFavorite) }) {
+                                            Icon(
+                                                imageVector = if (character.isFavorite) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
+                                                contentDescription = "Favorite"
+                                            )
+                                        }
+                                    }
                                 }
                             }
                         }

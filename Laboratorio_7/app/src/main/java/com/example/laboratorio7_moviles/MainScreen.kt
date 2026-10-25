@@ -8,9 +8,11 @@ import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.compose.*
+import androidx.navigation.toRoute
 import com.example.laboratorio7_moviles.characters.CharacterDetailScreen
 import com.example.laboratorio7_moviles.characters.CharactersScreen
 import com.example.laboratorio7_moviles.locations.LocationDetailsScreen
@@ -80,9 +82,18 @@ fun MainScreen(rootNavController: NavController) {
                         }
                     )
                 }
-                composable<CharacterDetailsDestination> {
+                composable<CharacterDetailsDestination> { backStackEntry ->
+                    val destination = backStackEntry.toRoute<CharacterDetailsDestination>()
+                    val viewModel: CharacterProfileViewModel = viewModel()
+
+                    // Dispara la carga de datos en Room basándose en el ID recibido
+                    LaunchedEffect(destination.characterId) {
+                        viewModel.loadData(destination.characterId)
+                    }
+
                     CharacterDetailScreen(
-                        onBackClick = { bottomNavController.navigateUp() }
+                        onBackClick = { bottomNavController.navigateUp() },
+                        viewModel = viewModel
                     )
                 }
             }
@@ -96,9 +107,18 @@ fun MainScreen(rootNavController: NavController) {
                         }
                     )
                 }
-                composable<LocationDetailsDestination> {
+                composable<LocationDetailsDestination> { backStackEntry ->
+                    val destination = backStackEntry.toRoute<LocationDetailsDestination>()
+                    val viewModel: LocationProfileViewModel = viewModel()
+
+                    // Dispara la carga de datos en Room basándose en el ID recibido
+                    LaunchedEffect(destination.locationId) {
+                        viewModel.loadData(destination.locationId)
+                    }
+
                     LocationDetailsScreen(
-                        onNavigateBack = { bottomNavController.navigateUp() }
+                        onNavigateBack = { bottomNavController.navigateUp() },
+                        viewModel = viewModel
                     )
                 }
             }
@@ -107,7 +127,6 @@ fun MainScreen(rootNavController: NavController) {
             composable<ProfileDestination> {
                 ProfileScreen(onLogout = {
                     rootNavController.navigate(LoginDestination) {
-                        // popUpTo(0) borra toda la pila y te devuelve limpio al Login
                         popUpTo(0) { inclusive = true }
                     }
                 })

@@ -1,31 +1,28 @@
 package com.example.laboratorio7_moviles
 
-import androidx.lifecycle.ViewModel
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
-class CharactersViewModel : ViewModel() {
-    private val _state = MutableStateFlow(ScreenState<List<Character>>())
-    val state: StateFlow<ScreenState<List<Character>>> = _state.asStateFlow()
+class CharactersViewModel(application: Application) : AndroidViewModel(application) {
+    private val dao = AppDatabase.getDatabase(application).characterDao()
 
-    init { loadData() }
+    val state: StateFlow<ScreenState<List<Character>>> = dao.getAllCharacters()
+        .map { entities ->
+            ScreenState(isLoading = false, data = entities.map { it.toModel() })
+        }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), ScreenState(isLoading = true))
 
-    fun loadData() {
-        viewModelScope.launch {
-            _state.value = ScreenState(isLoading = true, hasError = false)
-            delay(4000)
-            if (_state.value.isLoading) {
-                val data = CharacterDb().getAllCharacters()
-                _state.value = ScreenState(isLoading = false, data = data)
-            }
+    fun toggleFavorite(id: Int, isFavorite: Boolean) {
+        viewModelScope.launch(Dispatchers.IO) {
+            dao.updateFavoriteStatus(id, isFavorite)
         }
     }
 
-    fun forceError() {
-        _state.value = _state.value.copy(isLoading = false, hasError = true)
-    }
+    // Dejamos forceError por compatibilidad si la UI lo necesita
+    fun forceError() { }
+    fun loadData() { }
 }

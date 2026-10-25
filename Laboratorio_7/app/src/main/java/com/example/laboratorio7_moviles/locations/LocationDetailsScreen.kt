@@ -7,12 +7,13 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.laboratorio7_moviles.LocationProfileViewModel
 import com.example.laboratorio7_moviles.ErrorLayout
 import com.example.laboratorio7_moviles.LoadingLayout
-import com.example.laboratorio7_moviles.LocationProfileViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -25,44 +26,39 @@ fun LocationDetailsScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Location Details") },
+                title = { Text("Location details") },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.Filled.ArrowBack, contentDescription = "Volver")
+                        Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "Back")
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                    titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                )
             )
         }
-    ) { padding ->
-        Box(modifier = Modifier.padding(padding).fillMaxSize()) {
+    ) { paddingValues ->
+        Box(modifier = Modifier.padding(paddingValues).fillMaxSize()) {
             when {
-                state.isLoading -> {
-                    LoadingLayout(onErrorClick = { viewModel.forceError() })
-                }
-                state.hasError -> {
-                    ErrorLayout(onRetry = { viewModel.loadData() })
-                }
+                state.isLoading -> LoadingLayout(onErrorClick = { viewModel.forceError() })
+                state.hasError -> ErrorLayout(onRetry = { /* Se eliminó loadData() sin ID */ })
                 state.data != null -> {
                     val location = state.data!!
                     Column(
-                        modifier = Modifier.padding(16.dp).fillMaxWidth()
+                        modifier = Modifier.fillMaxSize().padding(16.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Text(text = location.name, style = MaterialTheme.typography.headlineMedium)
-                        Spacer(modifier = Modifier.height(16.dp))
+                        Spacer(modifier = Modifier.height(32.dp))
+
                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                            Text("ID:")
-                            Text("${location.id}")
+                            Text("Type:", style = MaterialTheme.typography.bodyLarge)
+                            Text(location.type, style = MaterialTheme.typography.bodyLarge)
                         }
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                            Text("Type:")
-                            Text(location.type)
-                        }
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                            Text("Dimension:")
-                            Text(location.dimension)
+                        Row(modifier = Modifier.fillMaxWidth().padding(top = 8.dp), horizontalArrangement = Arrangement.SpaceBetween) {
+                            Text("Dimension:", style = MaterialTheme.typography.bodyLarge)
+                            Text(location.dimension, style = MaterialTheme.typography.bodyLarge)
                         }
                     }
                 }

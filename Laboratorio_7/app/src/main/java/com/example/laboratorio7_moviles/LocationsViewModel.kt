@@ -1,31 +1,19 @@
 package com.example.laboratorio7_moviles
 
-import androidx.lifecycle.ViewModel
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.*
 
-class LocationsViewModel : ViewModel() {
-    private val _state = MutableStateFlow(ScreenState<List<Location>>())
-    val state: StateFlow<ScreenState<List<Location>>> = _state.asStateFlow()
+class LocationsViewModel(application: Application) : AndroidViewModel(application) {
+    private val dao = AppDatabase.getDatabase(application).locationDao()
 
-    init { loadData() }
-
-    fun loadData() {
-        viewModelScope.launch {
-            _state.value = ScreenState(isLoading = true, hasError = false)
-            delay(4000)
-            if (_state.value.isLoading) {
-                val data = LocationDb().getAllLocations()
-                _state.value = ScreenState(isLoading = false, data = data)
-            }
+    val state: StateFlow<ScreenState<List<Location>>> = dao.getAllLocations()
+        .map { entities ->
+            ScreenState(isLoading = false, data = entities.map { it.toModel() })
         }
-    }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), ScreenState(isLoading = true))
 
-    fun forceError() {
-        _state.value = _state.value.copy(isLoading = false, hasError = true)
-    }
+    fun forceError() { }
+    fun loadData() { }
 }
